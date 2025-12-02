@@ -8,6 +8,7 @@ const part1 = (rawInput) => {
   for (const [c1, c2] of input) {
     for (let i = +c1; i <= +c2; i++) {
       const coup = i.toString()
+      const mid = coup.length / 2
       const left = coup.slice(0, mid)
       const right = coup.slice(mid)
       if (left === right) {
