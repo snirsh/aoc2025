@@ -6,11 +6,8 @@ const part1 = (rawInput) => {
   const input = parseInput(rawInput)
   let inv = 0
   for (const [c1, c2] of input) {
-    // console.log(c1, c2)
     for (let i = +c1; i <= +c2; i++) {
       const coup = i.toString()
-      // console.log(coup)
-      const mid = coup.length / 2
       const left = coup.slice(0, mid)
       const right = coup.slice(mid)
       if (left === right) {
@@ -26,12 +23,9 @@ const part2 = (rawInput) => {
   const input = parseInput(rawInput)
   let inv = 0
   for (const [c1, c2] of input) {
-    console.log(c1, c2)
     for (let i = +c1; i <= +c2; i++) {
       const coup = i.toString()
-      console.log(coup)
       if ((coup + coup).slice(1, -1).includes(coup)) {
-        console.log('+', coup)
         inv+=(+coup)
       }
     }
