@@ -5,21 +5,16 @@ const parseInput = (rawInput) => rawInput.split('\n')
 const part1 = (rawInput) => {
   const input = parseInput(rawInput)
 
-  const startRow = input.findIndex(row => row.includes('S'))
-  const startCol = input[startRow].indexOf('S')
+  const startCol = input[0].indexOf('S')
 
   let splits = 0
 
   let beams = new Set([startCol])
 
-  for (let row = startRow + 1; row < input.length; row++) {
+  for (let row = 1; row < input.length; row++) {
     const newBeams = new Set()
 
     for (const x of beams) {
-      if (x < 0 || x >= input[row].length) {
-        continue
-      }
-
       if (input[row][x] === '^') {
         splits++
         newBeams.add(x - 1)
@@ -40,19 +35,14 @@ const part1 = (rawInput) => {
 const part2 = (rawInput) => {
   const input = parseInput(rawInput)
 
-  const startRow = input.findIndex(row => row.includes('S'))
-  const startCol = input[startRow].indexOf('S')
+  const startCol = input[0].indexOf('S')
 
   let paths = new Map([[startCol, 1]])
 
-  for (let row = startRow + 1; row < input.length; row++) {
+  for (let row = 1; row < input.length; row++) {
     const newPaths = new Map()
 
     for (const [x, count] of paths) {
-      if (x < 0 || x >= input[row].length) {
-        continue
-      }
-
       if (input[row][x] === '^') {
         newPaths.set(x - 1, (newPaths.get(x - 1) || 0) + count)
         newPaths.set(x + 1, (newPaths.get(x + 1) || 0) + count)
