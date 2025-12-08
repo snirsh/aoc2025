@@ -55,6 +55,16 @@ export const chunk = (arr, size) =>
   Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
     arr.slice(i * size, i * size + size),
   )
+/**
+ * Proper modulo operation that handles negative numbers correctly
+ * JavaScript's % operator returns negative results for negative dividends,
+ * but mathematical modulo should always return non-negative values.
+ * Example: -5 % 3 = -2, but modulo(-5, 3) = 1
+ * @param {number} n - The dividend (number to divide)
+ * @param {number} m - The divisor (modulo base)
+ * @returns {number} The modulo result (always in range [0, m))
+ */
+export const modulo = (n, m) => ((n % m) + m) % m
 
 // ============================================
 // GRID/MATRIX UTILITIES
@@ -71,7 +81,7 @@ export const toGrid = (input) => input.split("\n").map((row) => row.split(""))
  * Get all 4 orthogonal neighbors (up, down, left, right)
  * @param {number} row - Row index
  * @param {number} col - Column index
- * @returns {[number, number][]} Array of [row, col] coordinates
+ * @returns {Array<[number, number]>} Array of [row, col] coordinates
  */
 export const get4Neighbors = (row, col) => [
   [row - 1, col], // up
@@ -84,7 +94,7 @@ export const get4Neighbors = (row, col) => [
  * Get all 8 neighbors (including diagonals)
  * @param {number} row - Row index
  * @param {number} col - Column index
- * @returns {[number, number][]} Array of [row, col] coordinates
+ * @returns {Array<[number, number]>} Array of [row, col] coordinates
  */
 export const get8Neighbors = (row, col) => [
   [row - 1, col], // up
@@ -113,7 +123,7 @@ export const inBounds = (grid, row, col) =>
  * @param {number} row - Row index
  * @param {number} col - Column index
  * @param {boolean} includeDiagonals - Include diagonal neighbors
- * @returns {[number, number][]} Valid neighbor coordinates
+ * @returns {Array<[number, number]>} Valid neighbor coordinates
  */
 export const getValidNeighbors = (
   grid,
@@ -131,7 +141,7 @@ export const getValidNeighbors = (
  * Find all positions in grid matching a predicate
  * @param {any[][]} grid - The grid
  * @param {(val: any, row: number, col: number) => boolean} predicate - Test function
- * @returns {[number, number][]} Array of [row, col] coordinates
+ * @returns {Array<[number, number]>} Array of [row, col] coordinates
  */
 export const findInGrid = (grid, predicate) => {
   const results = []
@@ -413,7 +423,7 @@ export const combinations = (arr, k) => {
 /**
  * Generate all pairs from an array
  * @param {any[]} arr - Array to pair
- * @returns {[any, any][]} All pairs
+ * @returns {Array<[any, any]>} All pairs
  */
 export const pairs = (arr) => {
   const result = []
@@ -506,7 +516,7 @@ export const coordKey = (row, col) => `${row},${col}`
 /**
  * Parse coordinate key back to [row, col]
  * @param {string} key - Coordinate key
- * @returns {[number, number]} Parsed coordinates
+ * @returns {number[]} Parsed coordinates as [row, col]
  */
 export const parseCoordKey = (key) => key.split(",").map(Number)
 
