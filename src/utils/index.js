@@ -625,3 +625,132 @@ export const isEven = (n) => n % 2 === 0
  * @returns {boolean} True if odd
  */
 export const isOdd = (n) => n % 2 !== 0
+
+// ============================================
+// GEOMETRY UTILITIES
+// ============================================
+
+/**
+ * Calculate the area of a rectangle
+ * @param {number} width - Width
+ * @param {number} height - Height
+ * @returns {number} Area
+ */
+export const area = (width, height) => width * height
+
+
+/**
+ * Calculate the area of a rectangle between two points
+ * @param {{x: number, y: number}} t1 - First point
+ * @param {{x: number, y: number}} t2 - Second point
+ * @returns {number} Area
+ */
+export const getArea = (t1, t2) => (Math.abs(t2.x - t1.x) + 1) * (Math.abs(t2.y - t1.y) + 1)
+
+/**
+ * Calculate the distance between n points
+ * @param {Array<[number, number]>} points - Points
+ * @returns {number} Distance
+ */
+export const getDistance = (points) => {
+  let distance = 0
+  for (let i = 0; i < points.length - 1; i++) {
+    distance += Math.sqrt((points[i + 1][0] - points[i][0]) ** 2 + (points[i + 1][1] - points[i][1]) ** 2)
+  }
+  return distance
+}
+
+/**
+ * Calculate the distance between two points
+ * @param {{x: number, y: number}} t1 - First point
+ * @param {{x: number, y: number}} t2 - Second point
+ * @returns {number} Distance
+ */
+export const getDistance2 = (t1, t2) => Math.sqrt((t2.x - t1.x) ** 2 + (t2.y - t1.y) ** 2)
+
+/**
+ * Check if a point is inside a polygon using ray casting algorithm
+ * @param {number} x - X coordinate of the point
+ * @param {number} y - Y coordinate of the point
+ * @param {Array<{x: number, y: number}>} polygon - Array of polygon vertices
+ * @returns {boolean} True if point is inside polygon
+ */
+export const isPointInPolygon = (x, y, polygon) => {
+  let inside = false
+  const n = polygon.length
+
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n
+    const xi = polygon[i].x, yi = polygon[i].y
+    const xj = polygon[j].x, yj = polygon[j].y
+
+    if ((yi > y) !== (yj > y)) {
+      const xIntersect = (xj - xi) * (y - yi) / (yj - yi) + xi
+      if (x < xIntersect) {
+        inside = !inside
+      }
+    }
+  }
+
+  return inside
+}
+
+/**
+ * Check if an axis-aligned edge crosses the interior of a rectangle
+ * @param {{x: number, y: number}} p1 - First edge vertex
+ * @param {{x: number, y: number}} p2 - Second edge vertex
+ * @param {number} minX - Rectangle min X
+ * @param {number} maxX - Rectangle max X
+ * @param {number} minY - Rectangle min Y
+ * @param {number} maxY - Rectangle max Y
+ * @returns {boolean} True if edge crosses rectangle interior
+ */
+export const edgeCrossesRectInterior = (p1, p2, minX, maxX, minY, maxY) => {
+  if (p1.y === p2.y) {
+    const y = p1.y
+    if (y <= minY || y >= maxY) return false
+
+    const segMinX = Math.min(p1.x, p2.x)
+    const segMaxX = Math.max(p1.x, p2.x)
+    return segMinX < maxX && segMaxX > minX
+  }
+
+  if (p1.x === p2.x) {
+    const x = p1.x
+    if (x <= minX || x >= maxX) return false
+
+    const segMinY = Math.min(p1.y, p2.y)
+    const segMaxY = Math.max(p1.y, p2.y)
+    return segMinY < maxY && segMaxY > minY
+  }
+
+  return false
+}
+
+/**
+ * Check if a rectangle is fully inside a polygon
+ * @param {{x: number, y: number}} t1 - First corner of rectangle
+ * @param {{x: number, y: number}} t2 - Opposite corner of rectangle
+ * @param {Array<{x: number, y: number}>} polygon - Array of polygon vertices
+ * @returns {boolean} True if rectangle is inside polygon
+ */
+export const isRectInsidePolygon = (t1, t2, polygon) => {
+  const minX = Math.min(t1.x, t2.x)
+  const maxX = Math.max(t1.x, t2.x)
+  const minY = Math.min(t1.y, t2.y)
+  const maxY = Math.max(t1.y, t2.y)
+
+  const centerX = (minX + maxX) / 2
+  const centerY = (minY + maxY) / 2
+  if (!isPointInPolygon(centerX, centerY, polygon)) return false
+
+  for (let k = 0; k < polygon.length; k++) {
+    const next = (k + 1) % polygon.length
+    if (edgeCrossesRectInterior(polygon[k], polygon[next], minX, maxX, minY, maxY)) {
+      return false
+    }
+  }
+
+  return true
+}
+
