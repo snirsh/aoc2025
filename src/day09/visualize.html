@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 09 - Rectangle in Polygon Visualizer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: #0a0a0f;
+      background-image: 
+        radial-gradient(ellipse at 20% 30%, rgba(20, 60, 80, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(60, 20, 80, 0.2) 0%, transparent 50%);
+      min-height: 100vh;
+      font-family: 'VT323', monospace;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 18px;
+      color: #00ffcc;
+      text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+    
+    .subtitle {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+    
+    .container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .canvas-wrapper {
+      position: relative;
+      border: 3px solid #1a3a4a;
+      box-shadow: 
+        0 0 20px rgba(0, 255, 204, 0.2),
+        inset 0 0 30px rgba(0, 0, 0, 0.5);
+      background: #050508;
+    }
+    
+    canvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    
+    .panel {
+      background: linear-gradient(135deg, #0d1520 0%, #0a0f18 100%);
+      border: 2px solid #1a3a4a;
+      padding: 20px;
+      min-width: 280px;
+      max-width: 320px;
+      box-shadow: 
+        0 0 15px rgba(0, 150, 200, 0.1),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    
+    .panel h2 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 11px;
+      color: #ff6b9d;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #1a3a4a;
+    }
+    
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+    
+    .stat-label {
+      color: #6a8a9a;
+    }
+    
+    .stat-value {
+      color: #00ffcc;
+      font-weight: bold;
+      text-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+    }
+    
+    .stat-value.highlight {
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+      animation: pulse 0.5s ease-in-out;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    .controls {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #1a3a4a;
+    }
+    
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .control-row label {
+      font-size: 14px;
+      color: #6a8a9a;
+      min-width: 60px;
+    }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      flex: 1;
+      height: 8px;
+      background: #1a2a3a;
+      border-radius: 4px;
+      outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #00ffcc;
+      border-radius: 2px;
+      cursor: pointer;
+      box-shadow: 0 0 8px #00ffcc;
+    }
+    
+    button {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      padding: 12px 20px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(180deg, #00cc99 0%, #009977 100%);
+      color: #000;
+      box-shadow: 0 4px 0 #006644, 0 0 15px rgba(0, 255, 153, 0.3);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #006644, 0 0 25px rgba(0, 255, 153, 0.5);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #006644;
+    }
+    
+    .btn-primary:disabled {
+      background: linear-gradient(180deg, #4a5568 0%, #2d3748 100%);
+      box-shadow: 0 4px 0 #1a202c;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(180deg, #4a5568 0%, #2d3748 100%);
+      color: #e0e0e0;
+      box-shadow: 0 4px 0 #1a202c;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #1a202c;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .legend {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #1a3a4a;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .legend-color {
+      width: 20px;
+      height: 12px;
+      border: 1px solid #333;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #1a2a3a;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ffcc, #00cc99);
+      transition: width 0.1s;
+      box-shadow: 0 0 10px #00ffcc;
+    }
+    
+    .status {
+      font-size: 14px;
+      color: #ff6b9d;
+      margin-top: 10px;
+      min-height: 20px;
+    }
+    
+    .current-test {
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(0, 255, 204, 0.05);
+      border: 1px solid #1a3a4a;
+      font-size: 12px;
+    }
+    
+    .current-test .label {
+      color: #6a8a9a;
+      margin-bottom: 5px;
+    }
+    
+    .current-test .coords {
+      color: #00ffcc;
+      font-size: 14px;
+    }
+    
+    .result-valid {
+      color: #00ff88 !important;
+    }
+    
+    .result-invalid {
+      color: #ff4466 !important;
+    }
+    
+    /* Input Panel Styles */
+    .input-panel {
+      background: linear-gradient(135deg, #0d1520 0%, #0a0f18 100%);
+      border: 2px solid #1a3a4a;
+      padding: 20px;
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 20px;
+      box-shadow: 
+        0 0 15px rgba(0, 150, 200, 0.1),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    
+    .input-panel.hidden {
+      display: none;
+    }
+    
+    .input-methods {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .input-method {
+      flex: 1;
+      min-width: 250px;
+    }
+    
+    .input-method h3 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 9px;
+      color: #00ffcc;
+      margin-bottom: 10px;
+    }
+    
+    textarea {
+      width: 100%;
+      height: 150px;
+      background: #0a0f18;
+      border: 1px solid #1a3a4a;
+      color: #00ffcc;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      padding: 10px;
+      resize: vertical;
+      outline: none;
+    }
+    
+    textarea:focus {
+      border-color: #00ffcc;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+    }
+    
+    textarea::placeholder {
+      color: #3a5a6a;
+    }
+    
+    .file-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 150px;
+      border: 2px dashed #1a3a4a;
+      background: #0a0f18;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .file-upload:hover {
+      border-color: #00ffcc;
+      background: rgba(0, 255, 204, 0.05);
+    }
+    
+    .file-upload.dragover {
+      border-color: #00ffcc;
+      background: rgba(0, 255, 204, 0.1);
+    }
+    
+    .file-upload input {
+      display: none;
+    }
+    
+    .file-upload-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .file-upload-text {
+      font-size: 14px;
+      color: #6a8a9a;
+      text-align: center;
+    }
+    
+    .file-upload-text span {
+      color: #00ffcc;
+      text-decoration: underline;
+    }
+    
+    .load-btn-wrapper {
+      margin-top: 15px;
+      text-align: center;
+    }
+    
+    .or-divider {
+      display: flex;
+      align-items: center;
+      color: #3a5a6a;
+      font-size: 12px;
+      margin: 0 10px;
+    }
+    
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #1a3a4a;
+      margin: 0 10px;
+    }
+    
+    .show-input-btn {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>DAY 09 VISUALIZER</h1>
+  <p class="subtitle">Finding the largest rectangle inside a polygon</p>
+  
+  <div class="input-panel" id="inputPanel">
+    <h2>LOAD INPUT DATA</h2>
+    <p style="font-size: 14px; color: #6a8a9a; margin-bottom: 15px;">
+      Paste your input or upload a file. Format: one "x,y" coordinate per line.
+    </p>
+    <div class="input-methods">
+      <div class="input-method">
+        <h3>PASTE INPUT</h3>
+        <textarea id="inputText" placeholder="97668,50157&#10;97668,51385&#10;98359,51385&#10;..."></textarea>
+      </div>
+      <div class="or-divider">OR</div>
+      <div class="input-method">
+        <h3>UPLOAD FILE</h3>
+        <label class="file-upload" id="fileUpload">
+          <input type="file" id="fileInput" accept=".txt,.csv">
+          <div class="file-upload-icon">📁</div>
+          <div class="file-upload-text">
+            Drag & drop or <span>browse</span>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class="load-btn-wrapper">
+      <button class="btn-primary" id="loadBtn">LOAD & VISUALIZE</button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="canvas-wrapper">
+      <canvas id="canvas" width="700" height="700"></canvas>
+    </div>
+    
+    <div class="panel">
+      <h2>STATISTICS</h2>
+      
+      <div class="stat">
+        <span class="stat-label">Vertices:</span>
+        <span class="stat-value" id="vertexCount">0</span>
+      </div>
+      
+      <div class="stat">
+        <span class="stat-label">Total Pairs:</span>
+        <span class="stat-value" id="totalPairs">0</span>
+      </div>
+      
+      <div class="stat">
+        <span class="stat-label">Pairs Tested:</span>
+        <span class="stat-value" id="pairsTested">0</span>
+      </div>
+      
+      <div class="stat">
+        <span class="stat-label">Valid Rects:</span>
+        <span class="stat-value" id="validCount">0</span>
+      </div>
+      
+      <div class="stat">
+        <span class="stat-label">Max Area:</span>
+        <span class="stat-value" id="maxArea">0</span>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      
+      <div class="status" id="status">Load input data to begin</div>
+      
+      <div class="current-test">
+        <div class="label">Current Test:</div>
+        <div class="coords" id="currentCoords">-</div>
+      </div>
+      
+      <div class="controls">
+        <div class="control-row">
+          <label>Speed:</label>
+          <input type="range" id="speedSlider" min="1" max="100" value="50">
+        </div>
+        
+        <div class="control-row">
+          <label>Sample:</label>
+          <input type="range" id="sampleSlider" min="1" max="100" value="20">
+          <span id="sampleValue" style="color: #00ffcc; min-width: 50px;">1/20</span>
+        </div>
+        
+        <div class="btn-group">
+          <button class="btn-primary" id="startBtn" disabled>START</button>
+          <button class="btn-secondary" id="resetBtn">RESET</button>
+        </div>
+        
+        <button class="btn-secondary show-input-btn" id="showInputBtn" style="width: 100%; margin-top: 10px;">CHANGE INPUT</button>
+      </div>
+      
+      <div class="legend">
+        <h2 style="font-size: 10px; margin-bottom: 10px;">LEGEND</h2>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #00ccaa;"></div>
+          <span>Polygon outline</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: rgba(100, 150, 255, 0.5);"></div>
+          <span>Testing rectangle</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: rgba(255, 80, 100, 0.6);"></div>
+          <span>Invalid (crosses edge)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: rgba(80, 255, 150, 0.6);"></div>
+          <span>Valid rectangle</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: rgba(255, 215, 0, 0.7);"></div>
+          <span>Best rectangle</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const parseInput = (raw) => {
+      const lines = raw.trim().split('\n').filter(line => line.trim());
+      return lines.map(line => {
+        const [x, y] = line.split(',').map(s => parseInt(s.trim(), 10));
+        return { x, y };
+      }).filter(p => !isNaN(p.x) && !isNaN(p.y));
+    };
+
+    const getArea = (t1, t2) => (Math.abs(t2.x - t1.x) + 1) * (Math.abs(t2.y - t1.y) + 1);
+
+    const isPointInPolygon = (x, y, polygon) => {
+      let inside = false;
+      const n = polygon.length;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        const xi = polygon[i].x, yi = polygon[i].y;
+        const xj = polygon[j].x, yj = polygon[j].y;
+        if ((yi > y) !== (yj > y)) {
+          const xIntersect = (xj - xi) * (y - yi) / (yj - yi) + xi;
+          if (x < xIntersect) {
+            inside = !inside;
+          }
+        }
+      }
+      return inside;
+    };
+
+    const edgeCrossesRectInterior = (p1, p2, minX, maxX, minY, maxY) => {
+      if (p1.y === p2.y) {
+        const y = p1.y;
+        if (y <= minY || y >= maxY) return false;
+        const segMinX = Math.min(p1.x, p2.x);
+        const segMaxX = Math.max(p1.x, p2.x);
+        return segMinX < maxX && segMaxX > minX;
+      }
+      if (p1.x === p2.x) {
+        const x = p1.x;
+        if (x <= minX || x >= maxX) return false;
+        const segMinY = Math.min(p1.y, p2.y);
+        const segMaxY = Math.max(p1.y, p2.y);
+        return segMinY < maxY && segMaxY > minY;
+      }
+      return false;
+    };
+
+    const isRectInsidePolygon = (t1, t2, polygon) => {
+      const minX = Math.min(t1.x, t2.x);
+      const maxX = Math.max(t1.x, t2.x);
+      const minY = Math.min(t1.y, t2.y);
+      const maxY = Math.max(t1.y, t2.y);
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      if (!isPointInPolygon(centerX, centerY, polygon)) return false;
+      for (let k = 0; k < polygon.length; k++) {
+        const next = (k + 1) % polygon.length;
+        if (edgeCrossesRectInterior(polygon[k], polygon[next], minX, maxX, minY, maxY)) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    const pairs = (arr) => {
+      const result = [];
+      for (let i = 0; i < arr.length; i++) {
+        for (let j = i + 1; j < arr.length; j++) {
+          result.push([arr[i], arr[j], i, j]);
+        }
+      }
+      return result;
+    };
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = 30;
+
+    let tiles = [];
+    let allPairs = [];
+    let currentPairIndex = 0;
+    let validCount = 0;
+    let maxArea = 0;
+    let bestPair = null;
+    let isRunning = false;
+    let animationId = null;
+    let lastResult = null;
+    let flashTimer = 0;
+    let dataLoaded = false;
+    let minX, maxX, minY, maxY, scaleX, scaleY;
+
+    const initCoords = () => {
+      if (tiles.length === 0) return;
+      minX = Math.min(...tiles.map(t => t.x));
+      maxX = Math.max(...tiles.map(t => t.x));
+      minY = Math.min(...tiles.map(t => t.y));
+      maxY = Math.max(...tiles.map(t => t.y));
+      const rangeX = maxX - minX || 1;
+      const rangeY = maxY - minY || 1;
+      const availWidth = width - padding * 2;
+      const availHeight = height - padding * 2;
+      const scale = Math.min(availWidth / rangeX, availHeight / rangeY);
+      scaleX = scale;
+      scaleY = scale;
+    };
+
+    const toCanvas = (x, y) => {
+      const cx = padding + (x - minX) * scaleX;
+      const cy = padding + (y - minY) * scaleY;
+      return [cx, cy];
+    };
+
+    const drawPolygon = () => {
+      if (tiles.length === 0) return;
+      ctx.strokeStyle = '#00ccaa';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const [sx, sy] = toCanvas(tiles[0].x, tiles[0].y);
+      ctx.moveTo(sx, sy);
+      for (let i = 1; i < tiles.length; i++) {
+        const [x, y] = toCanvas(tiles[i].x, tiles[i].y);
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.fillStyle = '#00ffcc';
+      for (const t of tiles) {
+        const [x, y] = toCanvas(t.x, t.y);
+        ctx.fillRect(x - 1, y - 1, 3, 3);
+      }
+    };
+
+    const drawRect = (t1, t2, color, lineWidth = 2) => {
+      const [x1, y1] = toCanvas(Math.min(t1.x, t2.x), Math.min(t1.y, t2.y));
+      const [x2, y2] = toCanvas(Math.max(t1.x, t2.x), Math.max(t1.y, t2.y));
+      const w = x2 - x1;
+      const h = y2 - y1;
+      
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.strokeRect(x1, y1, w, h);
+    };
+
+    const fillRect = (t1, t2, color) => {
+      const [x1, y1] = toCanvas(Math.min(t1.x, t2.x), Math.min(t1.y, t2.y));
+      const [x2, y2] = toCanvas(Math.max(t1.x, t2.x), Math.max(t1.y, t2.y));
+      const w = x2 - x1;
+      const h = y2 - y1;
+      
+      ctx.fillStyle = color;
+      ctx.fillRect(x1, y1, w, h);
+    };
+
+    const highlightVertices = (t1, t2) => {
+      ctx.fillStyle = '#ffffff';
+      const [x1, y1] = toCanvas(t1.x, t1.y);
+      const [x2, y2] = toCanvas(t2.x, t2.y);
+      ctx.fillRect(x1 - 3, y1 - 3, 7, 7);
+      ctx.fillRect(x2 - 3, y2 - 3, 7, 7);
+    };
+
+    const drawGrid = () => {
+      ctx.strokeStyle = 'rgba(0, 100, 100, 0.1)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < width; i += 20) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, height);
+        ctx.stroke();
+      }
+      for (let i = 0; i < height; i += 20) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(width, i);
+        ctx.stroke();
+      }
+    };
+
+    const render = () => {
+      ctx.fillStyle = '#050508';
+      ctx.fillRect(0, 0, width, height);
+      drawGrid();
+
+      if (!dataLoaded) {
+        ctx.fillStyle = '#3a5a6a';
+        ctx.font = '20px VT323, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Load input data to visualize', width / 2, height / 2);
+        return;
+      }
+
+      if (bestPair) {
+        fillRect(bestPair[0], bestPair[1], 'rgba(255, 215, 0, 0.15)');
+        drawRect(bestPair[0], bestPair[1], 'rgba(255, 215, 0, 0.8)', 3);
+      }
+
+      drawPolygon();
+
+      if (currentPairIndex > 0 && currentPairIndex <= allPairs.length) {
+        const sampleRate = parseInt(document.getElementById('sampleSlider').value);
+        const actualIndex = Math.min((currentPairIndex - 1) * sampleRate, allPairs.length - 1);
+        const [t1, t2] = allPairs[actualIndex];
+        
+        if (flashTimer > 0) {
+          const alpha = flashTimer / 15;
+          if (lastResult === true) {
+            fillRect(t1, t2, `rgba(80, 255, 150, ${alpha * 0.6})`);
+            drawRect(t1, t2, `rgba(80, 255, 150, ${alpha})`, 2);
+          } else if (lastResult === false) {
+            fillRect(t1, t2, `rgba(255, 80, 100, ${alpha * 0.4})`);
+            drawRect(t1, t2, `rgba(255, 80, 100, ${alpha})`, 2);
+          }
+          highlightVertices(t1, t2);
+        } else {
+          fillRect(t1, t2, 'rgba(100, 150, 255, 0.2)');
+          drawRect(t1, t2, 'rgba(100, 150, 255, 0.8)', 2);
+          highlightVertices(t1, t2);
+        }
+      }
+    };
+
+    const updateStats = () => {
+      const sampleRate = parseInt(document.getElementById('sampleSlider').value);
+      const sampledTotal = allPairs.length > 0 ? Math.ceil(allPairs.length / sampleRate) : 0;
+      
+      document.getElementById('vertexCount').textContent = tiles.length;
+      document.getElementById('totalPairs').textContent = allPairs.length.toLocaleString();
+      document.getElementById('pairsTested').textContent = sampledTotal > 0 
+        ? `${(currentPairIndex * sampleRate).toLocaleString()} (${currentPairIndex}/${sampledTotal})`
+        : '0';
+      document.getElementById('validCount').textContent = validCount;
+      document.getElementById('maxArea').textContent = maxArea.toLocaleString();
+      document.getElementById('progressFill').style.width = sampledTotal > 0 
+        ? `${(currentPairIndex / sampledTotal) * 100}%`
+        : '0%';
+    };
+
+    const updateCurrentCoords = (t1, t2, i1, i2) => {
+      document.getElementById('currentCoords').innerHTML = 
+        `V${i1}: (${t1.x}, ${t1.y})<br>V${i2}: (${t2.x}, ${t2.y})`;
+    };
+
+    const step = () => {
+      const sampleRate = parseInt(document.getElementById('sampleSlider').value);
+      const sampledTotal = Math.ceil(allPairs.length / sampleRate);
+      
+      if (currentPairIndex >= sampledTotal) {
+        isRunning = false;
+        document.getElementById('status').textContent = `Complete! Max area: ${maxArea.toLocaleString()}`;
+        document.getElementById('status').className = 'status result-valid';
+        document.getElementById('startBtn').textContent = 'DONE';
+        render();
+        return;
+      }
+
+      const actualIndex = Math.min(currentPairIndex * sampleRate, allPairs.length - 1);
+      const [t1, t2, i1, i2] = allPairs[actualIndex];
+      
+      const isValid = isRectInsidePolygon(t1, t2, tiles);
+      lastResult = isValid;
+      flashTimer = 15;
+      
+      if (isValid) {
+        validCount++;
+        const area = getArea(t1, t2);
+        if (area > maxArea) {
+          maxArea = area;
+          bestPair = [t1, t2];
+          document.getElementById('maxArea').classList.add('highlight');
+          setTimeout(() => document.getElementById('maxArea').classList.remove('highlight'), 500);
+        }
+      }
+
+      updateCurrentCoords(t1, t2, i1, i2);
+      currentPairIndex++;
+      updateStats();
+
+      if (isValid) {
+        document.getElementById('status').textContent = 'Valid! Rectangle fits inside polygon';
+        document.getElementById('status').className = 'status result-valid';
+      } else {
+        document.getElementById('status').textContent = 'Invalid - rectangle crosses polygon edge';
+        document.getElementById('status').className = 'status result-invalid';
+      }
+    };
+
+    const animate = () => {
+      if (!isRunning) return;
+
+      const speed = parseInt(document.getElementById('speedSlider').value);
+      const stepsPerFrame = Math.ceil(speed / 10);
+
+      for (let i = 0; i < stepsPerFrame; i++) {
+        step();
+        if (!isRunning) break;
+      }
+
+      if (flashTimer > 0) flashTimer--;
+      render();
+
+      const delay = Math.max(1, 100 - speed);
+      setTimeout(() => {
+        animationId = requestAnimationFrame(animate);
+      }, delay);
+    };
+
+    const loadData = (rawInput) => {
+      const parsed = parseInput(rawInput);
+      if (parsed.length < 3) {
+        alert('Invalid input: Need at least 3 vertices to form a polygon');
+        return false;
+      }
+      
+      tiles = parsed;
+      allPairs = pairs(tiles);
+      initCoords();
+      currentPairIndex = 0;
+      validCount = 0;
+      maxArea = 0;
+      bestPair = null;
+      lastResult = null;
+      flashTimer = 0;
+      isRunning = false;
+      dataLoaded = true;
+      
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('startBtn').textContent = 'START';
+      document.getElementById('status').textContent = 
+        `Ready - ${tiles.length} vertices, ${allPairs.length.toLocaleString()} pairs to test`;
+      document.getElementById('status').className = 'status';
+      document.getElementById('currentCoords').textContent = '-';
+      
+      updateStats();
+      render();
+      document.getElementById('inputPanel').classList.add('hidden');
+      
+      return true;
+    };
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (!dataLoaded) return;
+      
+      if (isRunning) {
+        isRunning = false;
+        document.getElementById('startBtn').textContent = 'RESUME';
+        cancelAnimationFrame(animationId);
+      } else {
+        isRunning = true;
+        document.getElementById('startBtn').textContent = 'PAUSE';
+        animate();
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      isRunning = false;
+      cancelAnimationFrame(animationId);
+      currentPairIndex = 0;
+      validCount = 0;
+      maxArea = 0;
+      bestPair = null;
+      lastResult = null;
+      flashTimer = 0;
+      
+      if (dataLoaded) {
+        document.getElementById('startBtn').textContent = 'START';
+        document.getElementById('status').textContent = 
+          `Ready - ${tiles.length} vertices, ${allPairs.length.toLocaleString()} pairs to test`;
+      } else {
+        document.getElementById('status').textContent = 'Load input data to begin';
+      }
+      document.getElementById('status').className = 'status';
+      document.getElementById('currentCoords').textContent = '-';
+      updateStats();
+      render();
+    });
+
+    document.getElementById('sampleSlider').addEventListener('input', (e) => {
+      document.getElementById('sampleValue').textContent = `1/${e.target.value}`;
+      updateStats();
+    });
+
+    document.getElementById('loadBtn').addEventListener('click', () => {
+      const text = document.getElementById('inputText').value.trim();
+      if (text) {
+        loadData(text);
+      } else {
+        alert('Please paste input data or upload a file');
+      }
+    });
+
+    document.getElementById('showInputBtn').addEventListener('click', () => {
+      isRunning = false;
+      cancelAnimationFrame(animationId);
+      document.getElementById('inputPanel').classList.remove('hidden');
+    });
+
+    const fileInput = document.getElementById('fileInput');
+    const fileUpload = document.getElementById('fileUpload');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.getElementById('inputText').value = event.target.result;
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    fileUpload.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileUpload.classList.add('dragover');
+    });
+
+    fileUpload.addEventListener('dragleave', () => {
+      fileUpload.classList.remove('dragover');
+    });
+
+    fileUpload.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileUpload.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.getElementById('inputText').value = event.target.result;
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
