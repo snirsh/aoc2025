@@ -64,8 +64,8 @@ Both parts: 4.876ms
 ```
 Day 02
 Time part 1: 185.773ms
-Time part 2: -
-Both parts: 185.773ms
+Time part 2: 240.445ms
+Both parts: 426.218ms
 ```
 
 ```
@@ -133,105 +133,13 @@ Both parts: 2.219ms
 
 ```
 Day 12
-Time part 1: -
+Time part 1: 2.011ms
 Time part 2: -
-Both parts: -
+Both parts: 2.011ms
 ```
 
 ```
-Day 13
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 14
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 15
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 16
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 17
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 18
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 19
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 20
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 21
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 22
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 23
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 24
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Day 25
-Time part 1: -
-Time part 2: -
-Both parts: -
-```
-
-```
-Total stars: 21/50
-Total time: 3518.578ms
+Total stars: 24/24
 ```
 
 <!--/RESULTS-->
